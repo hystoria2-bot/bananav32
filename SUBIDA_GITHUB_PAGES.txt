@@ -1,0 +1,11 @@
+IMPORTANTE
+
+Este paquete está preparado sin carpetas internas.
+
+1. Borra todos los archivos actuales del repositorio bananadeluxe3.
+2. Descomprime este ZIP.
+3. Sube TODOS los archivos descomprimidos directamente a la raíz del repositorio.
+4. No subas el ZIP ni una carpeta contenedora.
+5. Comprueba que banana-rush-main-v15.js aparece junto a index.html.
+
+El fallo anterior se debía a que index.html pedía un JavaScript dentro de assets/, pero ese archivo no estaba en GitHub.

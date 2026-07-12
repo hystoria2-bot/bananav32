@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#5c14b2" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Banana Rush" />
+    <meta name="description" content="Banana Rush: Las Diez Islas. Juego móvil de plataformas con 10 niveles e iconos adaptados para PWA." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <title>Banana Rush Mobile</title>
+    <script>
+      (() => {
+        const BUILD = 'banana-v32-network-only';
+        window.__BANANA_BUILD__ = BUILD;
+
+        if ('caches' in window) {
+          caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch(() => {});
+        }
+
+        if ('serviceWorker' in navigator) {
+          let reloaded = sessionStorage.getItem(BUILD + '-reloaded') === '1';
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (reloaded) return;
+            reloaded = true;
+            sessionStorage.setItem(BUILD + '-reloaded', '1');
+            location.reload();
+          });
+
+          navigator.serviceWorker.register('./sw.js?v=32', { updateViaCache: 'none' })
+            .then((registration) => {
+              registration.waiting?.postMessage('SKIP_WAITING');
+              return registration.update();
+            })
+            .catch(() => {});
+        }
+      })();
+    </script>
+    <script>
+      (() => {
+        const memory = new Map();
+        const fallbackStorage = {
+          getItem: (key) => memory.has(String(key)) ? memory.get(String(key)) : null,
+          setItem: (key, value) => memory.set(String(key), String(value)),
+          removeItem: (key) => memory.delete(String(key)),
+          clear: () => memory.clear(),
+        };
+
+        try {
+          const testKey = '__banana_rush_storage_test__';
+          window.localStorage.setItem(testKey, '1');
+          window.localStorage.removeItem(testKey);
+          window.__bananaStorage = window.localStorage;
+        } catch {
+          window.__bananaStorage = fallbackStorage;
+        }
+
+        let lastBootError = '';
+        const recordError = (message) => {
+          lastBootError = String(message || 'Error desconocido');
+          console.error('[Banana Rush]', lastBootError);
+        };
+        window.__bananaRecordBootError = recordError;
+        window.addEventListener('error', (event) => recordError(event.message));
+        window.addEventListener('unhandledrejection', (event) => recordError(event.reason?.message || event.reason));
+
+        window.setTimeout(() => {
+          if (document.querySelector('#root canvas')) return;
+          const panel = document.createElement('div');
+          panel.id = 'banana-boot-error';
+          panel.style.cssText = 'position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:24px;background:#080d19;color:#fff;font-family:system-ui,sans-serif;text-align:center';
+          panel.innerHTML = '<div style="max-width:560px"><div style="font-size:52px">🍌</div><h1 style="margin:10px 0">No se pudo iniciar Banana Rush</h1><p style="opacity:.82;line-height:1.5">Vuelve a cargar la página. Si continúa, comprueba que todos los archivos del ZIP estén subidos en la raíz del repositorio.</p><small style="opacity:.55;word-break:break-word">' + lastBootError.replace(/[<>&]/g, '') + '</small></div>';
+          document.body.appendChild(panel);
+        }, 9000);
+      })();
+    </script>
+    <script defer src="./banana-rush-main-v32.js?v=32" onerror="window.__bananaRecordBootError?.('Falta banana-rush-main-v32.js en la raíz del repositorio.')"></script>
+    <link rel="stylesheet" crossorigin href="./banana-rush-main-v15.css?v=32">
+    <link rel="stylesheet" href="./enhancements.css?v=32">
+      <script src="./music.js?v=32" defer></script>
+    <script src="./effects.js?v=32" defer></script>
+    <script src="./enhancements.js?v=32" defer></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
